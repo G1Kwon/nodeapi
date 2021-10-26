@@ -7,20 +7,6 @@
  * @property {string} content
  */
 
-/** @type {Post[]} */
-const posts = [
-    {
-        id: 'my_first_post',
-        title: 'My first post',
-        content: 'Hello'
-    },
-    {
-        id: 'my_second_post',
-        title: '나의 두번째 타이틀',
-        content: 'Hellooo',
-    },
-]
-
 /**
  * @typedef APIResponse
  * @property {number} statusCode
@@ -30,56 +16,76 @@ const posts = [
 /**
  * @typedef Route
  * @property {RegExp} url
- * @property {'GET' | 'POST'} method
+ * @property {"GET" | "POST"} method
  * @property {(matches: string[], body: Object.<string, *> | undefined) => promise<APIResponse>} callback
  * */
+
+const fs = require('fs')
+const DB_JSON_FILENAME = 'database.json'
+
+/** @returns {Promise<Post[]>} */
+async function getPosts() {
+    const json = await fs.promises.readFile(DB_JSON_FILENAME, 'utf-8')
+    return JSON.parse(json).posts
+}
+
+/**
+ * @param {Post[]} posts
+ */
+async function savePosts(posts) {
+    const content = {
+        posts,
+    }
+    return fs.promises.writeFile(DB_JSON_FILENAME, JSON.stringify(content), 'utf-8')
+}
 
 /** @type {Route[]} */
 const routes = [
     {
         url: /^\/posts$/,
-        method: 'GET',
+        method: "GET",
         callback: async () => ({
             statusCode: 200,
-            body: posts,
+            body: await getPosts(),
         }),
     },
     {
         url: /^\/posts\/([a-zA-Z0-9-_]+)$/,
-        method: 'GET',
+        method: "GET",
         callback: async (matches) => {
             const postId = matches[1]
             if (!postId) {
                 return {
                     statusCode: 404,
-                    body: 'Not found',
+                    body: "Not found",
                 }
             }
 
+            const posts = await getPosts()
             const post = posts.find(_post => _post.id === postId)
 
             if (!post) {
                 return {
                     statusCode: 404,
-                    body: 'Not found',
+                    body: "Not found",
                 }
             }
 
             return {
                 statusCode: 200,
-                body: posts,
+                body: post,
             }
         },
     },
     {
         url: /^\/posts$/,
-        method: 'POST',
+        method: "POST",
         callback: async (_, body) => {
 
             if (!body) {
                 return {
                     statusCode: 400,
-                    body: 'Ill-formed request.'
+                    body: "Ill-formed request."
                 }
             }
 
@@ -87,12 +93,14 @@ const routes = [
             /* eslint-disable-next-lint prefer-destructuring */
             const title = body.title
             const newPost = {
-                id: title.replace(/\s/g, '_'),
+                id: title.replace(/\s/g, "_"),
                 title,
                 content: body.content
             }
 
+            const posts = await getPosts()
             posts.push(newPost)
+            savePosts(posts)
 
             return {
                 statusCode: 200,
