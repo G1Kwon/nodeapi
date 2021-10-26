@@ -6,6 +6,9 @@
   "scripts": {
     "server": "nodemon src/main.js"
   },
+  "engines": {
+    "node": "14.18.1"
+  },
   "devDependencies": {
     "eslint": "^8.1.0",
     "eslint-config-airbnb-base": "^14.2.1",
