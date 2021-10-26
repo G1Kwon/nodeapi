@@ -11,6 +11,33 @@
 
 const http = require('http')
 
+/**
+ * @typeof Post
+ * @property {string} id
+ * @property {string} title
+ * @property {string} content
+ */
+
+/** @type {Post[]}*/
+const posts = [
+    {
+        id: 'my_first_post',
+        title: 'My first post',
+        content: 'Hello'
+    },
+    {
+        id: 'my_second_post',
+        title: 'My second post',
+        content: 'Hellooo',
+    },
+]
+
+/**
+ *
+ * GET /posts
+ * GET /posts/:id
+ * POST /posts
+ */
 const server = http.createServer((req, res) => {
 
     const POSTS_ID_REGEX = /^\/posts\/([a-zA-Z0-9-_]+)$/
